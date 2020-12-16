@@ -29,16 +29,35 @@ public class GornerTableModel extends AbstractTableModel {
         double x = from + step*row;
         if( col== 0){
             return x;
-        } else {
+        } else if(col == 1) {
             int arr_len = coefficients.length;
             Double result = coefficients[arr_len-1];
-
             for(int i = arr_len-2; i > -1; i--) {
                 result *= x;
                 result += coefficients[i];
             }
-
             return result;
+        } else if(col == 2) {
+            int arr_len = coefficients.length;
+            Double result = coefficients[0];
+            for(int i = 1; i < arr_len; i++) {
+                result *= x;
+                result += coefficients[i];
+            }
+            return result;
+        } else {
+            int arr_len = coefficients.length;
+            Double result_forward = coefficients[arr_len-1];
+            for(int i = arr_len-2; i > -1; i--) {
+                result_forward *= x;
+                result_forward += coefficients[i];
+            }
+            Double result_backward = coefficients[0];
+            for(int i = 1; i < arr_len; i++) {
+                result_backward *= x;
+                result_backward += coefficients[i];
+            }
+            return result_forward - result_backward;
         }
     }
 

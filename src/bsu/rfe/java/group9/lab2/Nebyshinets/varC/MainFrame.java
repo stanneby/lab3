@@ -17,11 +17,15 @@ public class MainFrame extends JFrame{
     private JFileChooser fileChooser = null;
     private JMenuItem saveToTextMenuItem;
     private JMenuItem saveToGraphicsMenuItem;
+    private JMenuItem saveToCSVMenuItem;
     private JMenuItem searchValueMenuItem;
+    private JMenuItem searchDiaposonMenuItem;
+    private JMenuItem showInfoMenuItem;
 
     private JTextField textFieldFrom;
     private JTextField textFieldTo;
     private JTextField textFieldStep;
+    private ImageIcon authorImage;
 
     private Box hBoxResult;
     private GornerTableModel data;
@@ -41,6 +45,8 @@ public class MainFrame extends JFrame{
         menuBar.add(fileMenu);
         JMenu tableMenu = new JMenu("Таблица");
         menuBar.add(tableMenu);
+        JMenu helpMenu = new JMenu("Справка");
+        menuBar.add(helpMenu);
 
         Action saveToTextAction = new AbstractAction("Сохранить в текстовый файл") {
             @Override
@@ -74,17 +80,65 @@ public class MainFrame extends JFrame{
         saveToGraphicsMenuItem = fileMenu.add(saveToGraphicsAction);
         saveToGraphicsMenuItem.setEnabled(false);
 
+        Action saveToCSVAction = new AbstractAction("Сохранить в CSV файл") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(fileChooser==null){
+                    fileChooser = new JFileChooser();
+                    fileChooser.setCurrentDirectory(new File("."));
+                }
+                if(fileChooser.showSaveDialog(MainFrame.this) ==
+                        JFileChooser.APPROVE_OPTION){
+                    saveToCSVFile(fileChooser.getSelectedFile());
+                }
+            }
+        };
+        saveToCSVMenuItem = fileMenu.add(saveToCSVAction);
+        saveToCSVMenuItem.setEnabled(false);
+
         Action searchValueAction = new AbstractAction("Поиск") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String value = JOptionPane.showInputDialog(MainFrame.this,
-                        "Введите значения",  "Поиск");
+                        "Введите диапозон",  "Поиск");
                 renderer.setNeedle(value);
                 getContentPane().repaint();
             }
         };
         searchValueMenuItem = tableMenu.add(searchValueAction);
         searchValueMenuItem.setEnabled(false);
+
+        Action searchDiaposonAction = new AbstractAction("Найти мз диапозона") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JTextField startField = new JTextField(5);
+                JTextField endField = new JTextField(5);
+                JPanel inputPanel = new JPanel();
+                inputPanel.add(new JLabel("start: "));
+                inputPanel.add(startField);
+                inputPanel.add(Box.createHorizontalStrut(15));
+                inputPanel.add(new JLabel("end: "));
+                inputPanel.add(endField);
+                JOptionPane.showConfirmDialog(null, inputPanel,
+                        "Please Enter X and Y Values", JOptionPane.OK_CANCEL_OPTION);
+                renderer.setNeedle(startField.getText(), endField.getText());
+                getContentPane().repaint();
+            }
+        };
+        searchDiaposonMenuItem = tableMenu.add(searchDiaposonAction);
+        searchDiaposonMenuItem.setEnabled(false);
+
+        authorImage = new ImageIcon("gendo_ikari.jpg");
+        Action showInfoAction = new AbstractAction("О программе") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showConfirmDialog(null, "Небышинец Станислав\n9 группа",
+                        "Информация об авторе программы", JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE, authorImage);
+            }
+        };
+        showInfoMenuItem = helpMenu.add(showInfoAction);
+        showInfoMenuItem.setEnabled(true);
 
 
         JLabel labelForFrom = new JLabel("X изменяется на интервале от:");
@@ -132,7 +186,9 @@ public class MainFrame extends JFrame{
                     getContentPane().validate();
                     saveToTextMenuItem.setEnabled(true);
                     saveToGraphicsMenuItem.setEnabled(true);
+                    saveToCSVMenuItem.setEnabled(true);
                     searchValueMenuItem.setEnabled(true);
+                    searchDiaposonMenuItem.setEnabled(true);
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(MainFrame.this,
                             "Ошибка в формате записи числа с плавающей точкой", "Ошибочный формат числа",
@@ -151,7 +207,9 @@ public class MainFrame extends JFrame{
                 hBoxResult.add(new JPanel());
                 saveToTextMenuItem.setEnabled(false);
                 saveToGraphicsMenuItem.setEnabled(false);
+                saveToCSVMenuItem.setEnabled(false);
                 searchValueMenuItem.setEnabled(false);
+                searchDiaposonMenuItem.setEnabled(false);
                 getContentPane().validate();
             }
         });
@@ -211,6 +269,21 @@ public class MainFrame extends JFrame{
         }
     }
 
+    protected void saveToCSVFile(File selectedFile){
+        try{
+            PrintStream out = new PrintStream(selectedFile);
+
+            for(int i = 0; i < data.getRowCount(); i++){
+                out.print(data.getValueAt(i, 0));
+                for(int j = 1; j < 4; j++){
+                    out.print("," + data.getValueAt(i, j));
+                }
+                out.print("\n");
+            }
+            out.close();
+        } catch (FileNotFoundException e) {
+        }
+    }
 
     public static void main(String[] args) {
         if (args.length==0) {
